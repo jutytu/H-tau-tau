@@ -13,8 +13,7 @@ generated event weights for different CP scenarios (CP-even - 0&deg;, CP-odd - 9
 
 | File                                          | Description                                                                                                                           |
 |-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| prepare.py  
-preselection.py  
+| prepare.py  preselection.py  
 mc_to_csv.py       | Files meant for data preparation from .root files into data frames or .csv files as well as filtering the data.                        |
 | plots.py  
 distr.py                             | Various plots illustrating the data inside the files.                                                                                 |
