@@ -1,57 +1,16 @@
-# import ROOT as root
+# This file prepares the root files used for further analysis. 
+
+# The 'Events' function creates a data frame with a chosen set of branches from the original root file, unpacks the four-vectors ('Vectors4' function) and sets the 
+# phi star value according to the decay modes of both taus and their consistency with the matched decay modes ('Conditions function').
+
+# The 'Events2' function does the same thing, but puts extra requirements on the phi star value setting (the number of recorded charged/neutral tracks needs to match 
+# the expected number for a given decay mode).
+
+
 import numpy as np
 import uproot
 import pandas as pd
 import math
-# import awkward
-
-
-def AHHH1(data_file):
-    print("Reading file:", data_file)
-
-    file = uproot.open(data_file)
-    tree = file['NOMINAL']
-
-    branches = [
-        'ditau_matched_vis_mass',
-        'ditau_met_min_dphi',
-        'ditau_dr',
-        'ditau_deta',
-        'ditau_dphi',
-        'ditau_mmc_mlm_m',
-        'ditau_higgspt',
-        'n_vx',
-        'n_actual_int',
-        'n_avg_int'
-    ]
-
-    df = tree.arrays(branches, library='pd')
-    return df
-
-
-def AHHH2(data_file):
-    print("Reading file:", data_file)
-
-    file = uproot.open(data_file)
-    tree = file['NOMINAL']
-
-    vectors = ['tau_0_p4',
-               'tau_1_p4',
-               'met_p4']
-
-    df = tree.arrays(vectors, library='pd')
-
-    comps = ['X', 'Y', 'Z']
-    for column in df.columns:
-        for comp in comps:
-            df[f'{column}{comp}'] = df[column].apply(lambda x: x['fP'][f'f{comp}'])
-        df[f'{column}E'] = df[column].apply(lambda x: x['fE'])
-
-    df['tau_0_eta'] = df.apply(lambda row: math.atanh(row['tau_0_p4Z'] / row['tau_0_p4E']), axis=1)
-    df['tau_1_eta'] = df.apply(lambda row: math.atanh(row['tau_1_p4Z'] / row['tau_1_p4E']), axis=1)
-
-    df = df.drop(vectors, axis=1)
-    return df
 
 
 def Events(data_file):
@@ -104,6 +63,8 @@ def Events(data_file):
 
     df = tree.arrays(branches, library='pd')
 
+    # The numbers corresponding to each decay mode can be found in the article: https://arxiv.org/pdf/2212.05833.
+    
     def Conditions(data):
         if (data['tau_0_decay_mode'] == 0) and (data['tau_1_decay_mode'] == 0) and \
                 (data['tau_0_matched_decay_mode'] == 0) and (data['tau_1_matched_decay_mode'] == 0) and \
@@ -156,9 +117,9 @@ def Events(data_file):
                 (data['tau_0_matched_n_neutral'] == 0):
             return data['ditau_matched_CP_phi_star_cp_ip_rho']
         else:
-            return 999
+            return 999 # arbitrary number 999 is assigned to the events where decay modes and matched decay modes are different
 
-    df['phi_star'] = df.apply(Conditions, axis=1)
+    df['phi_star'] = df.apply(Conditions, axis=1) # phi star is chosen according to the Conditions
     df = df.drop(['ditau_CP_phi_star_cp_a1_rho',
                   'ditau_CP_phi_star_cp_ip_ip',
                   'ditau_CP_phi_star_cp_ip_rho',
@@ -166,10 +127,10 @@ def Events(data_file):
                   'ditau_CP_phi_star_cp_rho_ip',
                   'ditau_CP_phi_star_cp_rho_rho'], axis=1)
     df = df[df['phi_star'] < 999]
-    df = df[df['phi_star'] > 0]
+    df = df[df['phi_star'] > 0] # invalid events dropped: 999 = events with unmatched decay modes, 0 = events recorded as invalid at the data acquisition stage
     df.reset_index(drop=True, inplace=True)
 
-    def vector4(data):
+    def Vector4(data):
 
         vectors = ['tau_0_matched_vis_charged_p4',
                    'tau_0_matched_vis_neutral_p4',
@@ -187,7 +148,7 @@ def Events(data_file):
         data = data.drop(vectors, axis=1)
         return data
 
-    df_vec = vector4(df)
+    df_vec = Vector4(df)
     result = pd.concat([df, df_vec], axis=1)
     result = result.drop(['tau_0_matched_vis_charged_p4',
                           'tau_0_matched_vis_neutral_p4',
@@ -197,7 +158,7 @@ def Events(data_file):
     return result
 
 
-def Events2(data_file):
+def Events2(data_file): # different version of 'Events': a different set of branches chosen, removed the requirement for recorded tracks in the 'Conditions' function
     print("Reading file:", data_file)
 
     file = uproot.open(data_file)
@@ -301,7 +262,7 @@ def Events2(data_file):
     df = df[df['phi_star'] > 0]
     df.reset_index(drop=True, inplace=True)
 
-    def vector4(data):
+    def Vector4(data):
 
         vectors = ['tau_0_p4',
                    'tau_0_decay_neutral_p4',
@@ -322,7 +283,7 @@ def Events2(data_file):
         data = data.drop(vectors, axis=1)
         return data
 
-    df_vec = vector4(df)
+    df_vec = Vector4(df)
     result = pd.concat([df, df_vec], axis=1)
     result = result.drop(['tau_0_p4',
                           'tau_0_decay_neutral_p4',
@@ -333,37 +294,3 @@ def Events2(data_file):
 
     return result
 
-
-def Conditions2(data):
-    if (data['tau_0_decay_mode'] == 0) and (data['tau_1_decay_mode'] == 0) and \
-            (data['tau_0_matched_decay_mode'] == 0) and (data['tau_1_matched_decay_mode'] == 0):
-        return data['ditau_CP_phi_star_cp_ip_ip']
-    elif (data['tau_0_decay_mode'] == 1) and (data['tau_1_decay_mode'] == 1) and \
-            (data['tau_0_matched_decay_mode'] == 1) and (data['tau_1_matched_decay_mode'] == 1):
-        return data['ditau_CP_phi_star_cp_rho_rho']
-    elif (data['tau_0_decay_mode'] == 3) and (data['tau_1_decay_mode'] == 1) and \
-            (data['tau_0_matched_decay_mode'] == 3) and (data['tau_1_matched_decay_mode'] == 1):
-        return data['ditau_CP_phi_star_cp_a1_rho']
-    elif (data['tau_0_decay_mode'] == 1) and (data['tau_1_decay_mode'] == 3) and \
-            (data['tau_0_matched_decay_mode'] == 1) and (data['tau_1_matched_decay_mode'] == 3):
-        return data['ditau_CP_phi_star_cp_a1_rho']
-    elif (data['tau_0_decay_mode'] == 2) and (data['tau_1_decay_mode'] == 1) and \
-            (data['tau_0_matched_decay_mode'] == 2) and (data['tau_1_matched_decay_mode'] == 1):
-        return data['ditau_CP_phi_star_cp_rho_rho']
-    elif (data['tau_0_decay_mode'] == 1) and (data['tau_1_decay_mode'] == 2) and \
-            (data['tau_0_matched_decay_mode'] == 1) and (data['tau_1_matched_decay_mode'] == 2):
-        return data['ditau_CP_phi_star_cp_rho_rho']
-    elif (data['tau_0_decay_mode'] == 0) and (data['tau_1_decay_mode'] == 1) and \
-            (data['tau_0_matched_decay_mode'] == 0) and (data['tau_1_matched_decay_mode'] == 1):
-        return data['ditau_CP_phi_star_cp_ip_rho']
-    elif (data['tau_0_decay_mode'] == 1) and (data['tau_1_decay_mode'] == 0) and \
-            (data['tau_0_matched_decay_mode'] == 1) and (data['tau_1_matched_decay_mode'] == 0):
-        return data['ditau_CP_phi_star_cp_rho_ip']
-    elif (data['tau_0_decay_mode'] == 2) and (data['tau_1_decay_mode'] == 0) and \
-            (data['tau_0_matched_decay_mode'] == 2) and (data['tau_1_matched_decay_mode'] == 0):
-        return data['ditau_CP_phi_star_cp_rho_ip']
-    elif (data['tau_0_decay_mode'] == 0) and (data['tau_1_decay_mode'] == 2) and \
-            (data['tau_0_matched_decay_mode'] == 0) and (data['tau_1_matched_decay_mode'] == 2):
-        return data['ditau_CP_phi_star_cp_ip_rho']
-    else:
-        return 999
