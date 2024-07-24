@@ -1,5 +1,5 @@
 # Plotting some more quantities. This function creates folders with multiple plots and confusion matrices for different data files, listed as 'files' under the
-# function definition. The folders can be found in this repository.
+# function definition. Some of the folders (size limit) can be found in this repository.
 
 
 import seaborn as sns
