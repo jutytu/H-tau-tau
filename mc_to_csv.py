@@ -1,8 +1,7 @@
 # Creates csv files from the root files data using the 'Events2' function from prepare.py, saves them in folders named based on the files names.
 
+
 from prepare import *
-import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
 
 
 def mkdir_p(mypath): # for creating directories where the new files will be stores
