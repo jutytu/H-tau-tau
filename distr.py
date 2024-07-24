@@ -1,13 +1,11 @@
-# dystrybucje phi star dla wag roznych hipotez
+# Plots distributions of phi star for different hypotheses.
 
-from prepare import *
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# zero = Events('nazwy2.txt.root')
-# zero.to_csv('pik_zero.csv')
-###
-zero = pd.read_csv('pik_zero.csv')
+def Plots(data)
+zero = pd.read_csv(data) # this data frame is called 'zero' due to the name of the first file it was tested on
 plt.subplot(1, 2, 1)
 plt.hist(zero['phi_star'], bins=50, weights=zero['tauspinner_HCP_Theta_160'])
 plt.xlabel('Phi_Star')
