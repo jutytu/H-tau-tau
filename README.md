@@ -1,7 +1,7 @@
 # H-tau-tau
 
 This is an analysis of the Higgs boson decay into two tau leptons, performed using data from the ATLAS experiment at CERN. The final goal of the analysis was
-to use a neural network in order to differantiate between the CP-odd and CP-even hypotheses for the Higgs boson, based on the four-momenta of its decay products.
+to use a neural network in order to differantiate between the CP-odd and CP-even hypotheses for the Higgs boson, based on the four-momenta of its decay products. This analysis constituted my project completed as part of the tutorial during my third year of undergraduate studies in Physics.
 
 ### Data
 
@@ -14,9 +14,11 @@ generated event weights for different CP scenarios (CP-even - 0&deg;, CP-odd - 9
 | File                                          | Description                                                                                                                           |
 |-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
 | prepare.py <br> preselection.py <br> mc_to_csv.py       | Files meant for data preparation from .root files into data frames or .csv files as well as filtering the data.                        |
-| plots.py  
-distr.py                             | Various plots illustrating the data inside the files.                                                                                 |
+| plots.py <br> distr.py                             | Various plots illustrating the data inside the files.                                                                                 |
 | boost_rotation.py                             | Relativistic boost of the four-momenta of the leptons into the CoM frame + rotation so that the momenta are along the z-axis.                                                           |
-| boost_rotation_categories.py  
-nn_categories.py | Non-relativistic boost of the four-momenta into the CoM frame and a neural network learning to predict most probable CP angle for a given event.                                 |
+| boost_rotation_categories.py <br> nn_categories.py | Non-relativistic boost of the four-momenta into the CoM frame and a neural network learning to predict most probable CP angle for a given event.                                 |
 | C123.py                                       | Calculating coefficients describing the relation between the weight and the CP angle using systems of linear equations for each event. |
+
+### References
+
+This analysis was based on a similar, more expanded analysis from the article: [https://arxiv.org/pdf/2001.00455](https://arxiv.org/pdf/2001.00455).
