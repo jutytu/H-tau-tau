@@ -1,25 +1,20 @@
-from prepare import *
+# Another boost-rotation file (centre-of-mass frame of reference). Rotated four-momenta were used in the analysis: https://arxiv.org/pdf/2001.00455.
+# The rotation part has been removed from this file in order to add some variation to what has already been done. This time the boost is performed
+# in the non-relativistic way. The boosted data is used as input for a neural network later on.
+
+
 import torch
 import pandas as pd
-from torch import nn
-from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
 import numpy as np
 
 
-# pliki = {'ggH_unpol_e/ggh_unpol_e.csv',
-#          'VBFH_unpol_e/VBFH_unpol_e.csv',
-#          'ggH_unpol/ggh_unpol.csv',
-#          'VBFH_unpol/VBFH_unpol.csv',
-#          'ggH_unpol_d/ggh_unpol_d.csv',
-#          'VBFH_unpol_d/VBFH_unpol_d.csv'}
+pliki = {'ggH_unpol_e/ggh_unpol_e.csv',
+         'VBFH_unpol_e/VBFH_unpol_e.csv',
+         'ggH_unpol/ggh_unpol.csv',
+         'VBFH_unpol/VBFH_unpol.csv',
+         'ggH_unpol_d/ggh_unpol_d.csv',
+         'VBFH_unpol_d/VBFH_unpol_d.csv'}
 
-pliki = {'ggH_CPeven_e/ggh_CPeven_e.csv',
-         'VBFH_CPeven_e/VBFH_CPeven_e.csv',
-         'ggH_CPeven/ggh_CPeven.csv',
-         'VBFH_CPeven/VBFH_CPeven.csv',
-         'ggH_CPeven_d/ggh_CPeven_d.csv',
-         'VBFH_CPeven_d/VBFH_CPeven_d.csv'}
 
 features = ['tau_0_decay_neutral_p4E',
             'tau_0_decay_neutral_p4X',
@@ -59,7 +54,7 @@ features = ['tau_0_decay_neutral_p4E',
 
 dfs = []
 n = 0
-for i in pliki:
+for i in pliki:  # merging the files together
     df = pd.read_csv(i)
     dfs.append(df)
     n += 1
@@ -69,7 +64,7 @@ full_df = merged_df[features]
 pd.set_option('display.max_columns', None)
 full_df.to_csv('full_df', index=False)
 
-def boost(df):
+def boost(df):  # non-relativistic boost to the centre-of-mass frame 
     sum_x = df[['tau_0_decay_neutral_p4X', 'tau_1_decay_neutral_p4X', 'tau_0_decay_charged_p4X',
                 'tau_1_decay_charged_p4X']].sum(axis=1)
     sum_y = df[['tau_0_decay_neutral_p4Y', 'tau_1_decay_neutral_p4Y', 'tau_0_decay_charged_p4Y',
@@ -106,7 +101,7 @@ def boost(df):
 full_df = boost(full_df)
 
 
-full_df.loc[:, 'hypothesis'] = full_df[['tauspinner_HCP_Theta_0',
+full_df.loc[:, 'hypothesis'] = full_df[['tauspinner_HCP_Theta_0',  # finding the most probable hypothesis for each event, i.e. the one for which the weight is the biggest
             'tauspinner_HCP_Theta_10',
             'tauspinner_HCP_Theta_20',
             'tauspinner_HCP_Theta_30',
@@ -126,7 +121,7 @@ full_df.loc[:, 'hypothesis'] = full_df[['tauspinner_HCP_Theta_0',
             'tauspinner_HCP_Theta_170']].idxmax(axis=1)
 
 
-# zboostowane 4-pedy:
+#  X - data frame with boosted four-momenta
 X = full_df[['tau_0_decay_neutral_p4E',
             'tau_0_decay_neutral_p4X',
             'tau_0_decay_neutral_p4Y',
@@ -149,10 +144,10 @@ X = X.to_numpy()
 print(len(X))
 X = torch.from_numpy(np.float64(X))
 print(len(X))
-X = X.to(torch.float32)
+X = X.to(torch.float32) # converting X to a torch tensor, useful for the neural network
 
 
-def hot1(data):
+def hot1(data):  # one-hot encoding the most probable hypotehsis: vector with 18 elements, all of them = 0 except the one corresponding to the hypothesis (element position = angle/10)
     zero = torch.zeros(18)
     if data['hypothesis'] == 'tauspinner_HCP_Theta_0':
         zero[0] = 1
@@ -212,14 +207,11 @@ def hot1(data):
 full_df['y'] = full_df.apply(hot1, axis=1)
 y = torch.stack(full_df['y'].values.tolist())
 y = y.to(torch.float32)
-y = y.to(torch.float32)
+y = y.to(torch.float32)  # saving the hypotheses as the pytorch tensor y
 
-
-# X - 4-pedy dla 4 decay products
-# y - zakodowane jedynka ktora hipoteza najprawdopodobniejsza dla danego eventu
 
 print(len(full_df))
 torch.save(X, 'X.pt')
 print(len(X))
 print(len(y))
-torch.save(y, 'y.pt')
+torch.save(y, 'y.pt') # saving for future use in the neural network
