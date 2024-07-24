@@ -1,4 +1,5 @@
-# te foldery z confusion matrices tu powstaly
+# Plotting some more quantities. This function creates folders with multiple plots and confusion matrices for different data files, listed as 'files' under the
+# function definition. The folders can be found in this repository.
 
 
 import seaborn as sns
@@ -8,20 +9,17 @@ import matplotlib.lines as mlines
 import math
 
 
-plik1 = 'ggH_CPodd.txt.root'
-
 def Yrs(plik):
     pd.set_option('mode.chained_assignment', None)
-    # pd.reset_option("mode.chained_assignment")
     df = Events2(plik)
     pd.set_option('display.max_columns', None)
 
 
-    #liczba eventow
+    # number of events
     print(f'num of events {plik}: ', len(df))
     num = len(df)
 
-    #preselekcje
+    # preselection
     df = df[(df['NOMINAL_pileup_random_run_number'] > 0) & (df['event_is_bad_batman'] == 0) &
             (((abs(df['tau_0_matched_pdgId']) < 7) | (df['tau_0_matched_pdgId'] == 21)) == 0) &
             (((abs(df['tau_1_matched_pdgId']) < 7) | (df['tau_1_matched_pdgId'] == 21)) == 0) &
@@ -37,14 +35,14 @@ def Yrs(plik):
     print(f'acceptance {plik}: ', len(df)/num, '\n')
 
 
-    #rozklady decay modes
+    # decay mode distributions
 
     def mkdir_p(mypath):
         from errno import EEXIST
         from os import makedirs,path
         try:
             makedirs(mypath)
-        except OSError as exc: # Python >2.5
+        except OSError as exc: 
             if exc.errno == EEXIST and path.isdir(mypath):
                 pass
             else: raise
@@ -75,7 +73,7 @@ def Yrs(plik):
     plt.show()
 
 
-    #confusion matrix
+    # confusion matrix of decay modes and matched decay modes
 
     df2 = df[['tau_0_decay_mode', 'tau_0_matched_decay_mode']]
     df2 = df2[df2['tau_0_matched_decay_mode']<4]
@@ -86,7 +84,6 @@ def Yrs(plik):
     heatmap = sns.heatmap(pivot_table, annot=True, cmap='Purples', fmt='g')
     heatmap.xaxis.tick_top()
     heatmap.xaxis.set_label_position('top')
-    # plt.title('confusion', pad=-370, loc='center', y=1.05)
     heatmap.set_xlabel('tau_0_matched_decay_mode')
     heatmap.set_ylabel('tau_0_decay_mode')
 
@@ -102,7 +99,6 @@ def Yrs(plik):
     heatmap = sns.heatmap(pivot_table, annot=True, cmap='Purples', fmt='g')
     heatmap.xaxis.tick_top()
     heatmap.xaxis.set_label_position('top')
-    # plt.title('confusion', pad=-370, loc='center', y=1.05)
     heatmap.set_xlabel('tau_1_matched_decay_mode')
     heatmap.set_ylabel('tau_1_decay_mode')
 
@@ -110,7 +106,7 @@ def Yrs(plik):
     plt.show()
 
 
-    #rozklady phi
+    # phi distributions
 
     dict = {'1p0n 1p0n': [0, 0],
             '1p1n 1p0n': [1, 0],
@@ -124,7 +120,7 @@ def Yrs(plik):
             '3p0n 1p1n': [3, 1]}
 
     plt.figure(figsize=(5, 4))
-    hist, bins = np.histogram(df['phi_star'], bins=20)  # You can adjust the number of bins as needed
+    hist, bins = np.histogram(df['phi_star'], bins=20) 
     bin_centers = (bins[:-1] + bins[1:]) / 2
     plt.hist(df['phi_star'], bins=20, edgecolor='black', alpha=0.7)
 
@@ -132,8 +128,6 @@ def Yrs(plik):
     scatter_y = hist
     plt.clf()
     plt.scatter(scatter_x, scatter_y, s=320, color='red', marker=1)
-    # plt.errorbar(x=scatter_x, y=scatter_y, yerr=math.sqrt(len(df)), fmt='none', ecolor='black', capsize=5)
-    # plt.ylim(bottom=0)
     plt.xlabel('phi_star')
     plt.ylabel('counts')
     blue_line = mlines.Line2D([], [], color='red', markersize=15, label=plik.strip('.txt.root'))
@@ -144,10 +138,10 @@ def Yrs(plik):
     plt.show()
 
 
-    #zmienne kinematyczne
+    # kinematic variables
 
     plt.figure(figsize=(5, 5))
-    hist, bins = np.histogram(df['ditau_matched_vis_mass'], bins=20)  # You can adjust the number of bins as needed
+    hist, bins = np.histogram(df['ditau_matched_vis_mass'], bins=20) 
     bin_centers = (bins[:-1] + bins[1:]) / 2
     plt.hist(df['ditau_matched_vis_mass'], bins=20, edgecolor='black', alpha=0.7)
 
@@ -164,7 +158,7 @@ def Yrs(plik):
     plt.show()
     ###
     plt.figure(figsize=(5, 5))
-    hist, bins = np.histogram(df[(df['tau_0_p4T']>0) & (df['tau_0_p4T']<250)]['tau_0_p4T'], bins=30)  # You can adjust the number of bins as needed
+    hist, bins = np.histogram(df[(df['tau_0_p4T']>0) & (df['tau_0_p4T']<250)]['tau_0_p4T'], bins=30)
     bin_centers = (bins[:-1] + bins[1:]) / 2
     plt.hist(df[(df['tau_0_p4T']>0) & (df['tau_0_p4T']<250)]['tau_0_p4T'], bins=30, edgecolor='black', alpha=0.7)
 
@@ -182,7 +176,7 @@ def Yrs(plik):
     plt.show()
     ###
     plt.figure(figsize=(5, 5))
-    hist, bins = np.histogram(df[(df['tau_1_p4T'] > 0) & (df['tau_1_p4T'] < 250)]['tau_1_p4T'], bins=30)  # You can adjust the number of bins as needed
+    hist, bins = np.histogram(df[(df['tau_1_p4T'] > 0) & (df['tau_1_p4T'] < 250)]['tau_1_p4T'], bins=30)  
     bin_centers = (bins[:-1] + bins[1:]) / 2
     plt.hist(df[(df['tau_1_p4T'] > 0) & (df['tau_1_p4T'] < 250)]['tau_1_p4T'], bins=30, edgecolor='black', alpha=0.7)
 
@@ -199,24 +193,24 @@ def Yrs(plik):
     plt.savefig(f'{plik.strip(".txt.root")}/{plik.strip(".txt.root")}_tau_1_pT.png')
     plt.show()
 
-pliki = {'ggH_CPeven_e.txt.root',
+files = {'ggH_CPeven_e.txt.root',
          'ggH_CPodd_e.txt.root',
          'ggH_unpol_e.txt.root',
          'VBFH_CPeven_e.txt.root',
          'VBFH_CPodd_e.txt.root',
          'VBFH_unpol_e.txt.root'}
-         # 'ggH_CPeven.txt.root',
-         # 'ggH_CPodd.txt.root',
-         # 'ggH_unpol.txt.root',
-         # 'VBFH_CPeven.txt.root',
-         # 'VBFH_CPodd.txt.root',
-         # 'VBFH_unpol.txt.root',
-         # 'ggH_CPeven_d.txt.root',
-         # 'ggH_CPodd_d.txt.root',
-         # 'ggH_unpol_d.txt.root',
-         # 'VBFH_CPeven_d.txt.root',
-         # 'VBFH_CPodd_d.txt.root',
-         # 'VBFH_unpol_d.txt.root'}
+         'ggH_CPeven.txt.root',
+         'ggH_CPodd.txt.root',
+         'ggH_unpol.txt.root',
+         'VBFH_CPeven.txt.root',
+         'VBFH_CPodd.txt.root',
+         'VBFH_unpol.txt.root',
+         'ggH_CPeven_d.txt.root',
+         'ggH_CPodd_d.txt.root',
+         'ggH_unpol_d.txt.root',
+         'VBFH_CPeven_d.txt.root',
+         'VBFH_CPodd_d.txt.root',
+         'VBFH_unpol_d.txt.root'}
 
-for i in pliki:
+for i in files:
     Yrs(i)
